@@ -1,0 +1,154 @@
+import json
+import folium 
+import requests
+import pandas as pd
+from tqdm import tqdm
+
+
+
+Mapbox_API_Key = "API_Key_Goes_Here"
+OW_API_Key = "API_Key_Goes_Here"
+
+df = pd.read_excel("D:\Data\Transaction and routes data\Routes_Clean.xlsx")
+
+description_new = []
+for k in tqdm(range(len(df))):
+    Origin = df['Origin'][k]
+    Destination = df['Destination'][k]
+    Canal = df['TradeRoute'][k]
+    latitude = df['Latitude'][k]
+    longitude = df['Longitude'][k]
+    lat = str(latitude).split(',')
+    lon = str(longitude).split(',')
+    lat[0] = lat[0].replace("['","")
+    lat[-1] = lat[-1].replace("']","")
+    lon[0] = lon[0].replace("['","")
+    lon[-1] = lon[-1].replace("']","")
+    
+    lat = [float(i) for i in lat]
+    lon = [float(i) for i in lon]
+    
+    onboard_coord = [lat[0],lon[0]]
+    offload_coord = [lat[-1],lon[-1]]
+    # zoom_point = [(onboard_coord [i]+offload_coord[i])/2 for i in range(len(onboard_coord))]
+    
+    m = folium.Map(
+        location=[45.523, -122.675],
+        zoom_start=2,
+        tiles = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token='+Mapbox_API_Key,
+        attr='JithuNair')
+    
+    
+    
+    points = []
+    
+    for i in range(len(lat)):
+        points.append([lat[i],lon[i]])
+    
+    
+    weather_points = [[lat[0],lon[0]],[lat[int(len(lat)*0.25)],lon[int(len(lon)*0.25)]],[lat[int(len(lat)*0.37)],lon[int(len(lon)*0.37)]],[lat[int(len(lat)*0.50)],lon[int(len(lon)*0.50)]],[lat[int(len(lat)*0.67)],lon[int(len(lon)*0.67)]],[lat[int(len(lat)*0.75)],lon[int(len(lon)*0.75)]],[lat[-1],lon[-1]]]
+    temperature=[]
+    description=[]
+    for i in range(len(weather_points)):
+        r = requests.get("http://api.openweathermap.org/data/2.5/onecall?lat="+str(weather_points[i][0])+"&lon="+str(weather_points[i][1])+"&appid="+OW_API_Key)
+        data = json.loads(r.content)
+        description.append(data['daily'][7]['weather'][0]['main'])
+        temperature.append(round(data['daily'][7]['temp']['max']-273.15,2))
+    
+    
+    #Origin
+    tooltip = "Temperature:"+str(temperature[0])+" Weather: "+str(description[0])
+    if description[0] == 'Clouds':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Cloudy.png'
+    elif description[0] == 'Rain':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Rainy.png'
+    elif description[0] == 'Snow':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Snow.png'
+    elif description[0] == 'Clear':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Sunny.png'
+    icon = folium.features.CustomIcon(icon_url,icon_size=(40, 40))
+    folium.Marker(weather_points[0],popup = 'Origin', tooltip = tooltip,icon=icon).add_to(m)
+    
+    #Destination
+    tooltip = "Temperature:"+str(temperature[-1])+" Weather: "+str(description[-1])
+    if description[-1] == 'Clouds':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Cloudy.png'
+    elif description[-1] == 'Rain':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Rainy.png'
+    elif description[-1] == 'Snow':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Snow.png'
+    elif description[-1] == 'Clear':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Sunny.png'
+    icon = folium.features.CustomIcon(icon_url,icon_size=(40, 40))
+    folium.Marker(weather_points[-1],popup = 'Destination', tooltip = tooltip, icon = icon).add_to(m)
+    
+    #0.25
+    tooltip = "Temperature:"+str(temperature[1])+" Weather: "+str(description[1])
+    if description[1] == 'Clouds':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Cloudy.png'
+    elif description[1] == 'Rain':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Rainy.png'
+    elif description[1] == 'Snow':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Snow.png'
+    elif description[1] == 'Clear':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Sunny.png'
+    icon = folium.features.CustomIcon(icon_url,icon_size=(40, 40))
+    folium.Marker(weather_points[1],popup = 'Destination', tooltip = tooltip, icon = icon).add_to(m)
+    
+    #0.37
+    tooltip = "Temperature:"+str(temperature[2])+" Weather: "+str(description[2])
+    if description[2] == 'Clouds':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Cloudy.png'
+    elif description[2] == 'Rain':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Rainy.png'
+    elif description[2] == 'Snow':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Snow.png'
+    elif description[2] == 'Clear':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Sunny.png'
+    icon = folium.features.CustomIcon(icon_url,icon_size=(40, 40))
+    folium.Marker(weather_points[2],popup = 'Destination', tooltip = tooltip, icon = icon).add_to(m)
+    
+    #0.50
+    tooltip = "Temperature:"+str(temperature[3])+" Weather: "+str(description[3])
+    if description[3] == 'Clouds':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Cloudy.png'
+    elif description[3] == 'Rain':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Rainy.png'
+    elif description[3] == 'Snow':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Snow.png'
+    elif description[3] == 'Clear':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Sunny.png'
+    icon = folium.features.CustomIcon(icon_url,icon_size=(40, 40))
+    folium.Marker(weather_points[3],popup = 'Destination', tooltip = tooltip, icon = icon).add_to(m)
+    
+    
+    #0.67
+    tooltip = "Temperature:"+str(temperature[4])+" Weather: "+str(description[4])
+    if description[4] == 'Clouds':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Cloudy.png'
+    elif description[4] == 'Rain':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Rainy.png'
+    elif description[4] == 'Snow':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Snow.png'
+    elif description[4] == 'Clear':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Sunny.png'
+    icon = folium.features.CustomIcon(icon_url,icon_size=(40, 40))
+    folium.Marker(weather_points[4],popup = 'Destination', tooltip = tooltip, icon = icon).add_to(m)
+    
+    #0.75
+    tooltip = "Temperature:"+str(temperature[5])+" Weather: "+str(description[5])
+    if description[5] == 'Clouds':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Cloudy.png'
+    elif description[5] == 'Rain':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Rainy.png'
+    elif description[5] == 'Snow':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Snow.png'
+    elif description[5] == 'Clear':
+        icon_url = r'C:\Users\Jithu\Desktop\Icons\Sunny.png'
+    icon = folium.features.CustomIcon(icon_url,icon_size=(40, 40))
+    folium.Marker(weather_points[5],popup = 'Destination', tooltip = tooltip, icon = icon).add_to(m)
+    
+    
+    folium.PolyLine(points, color="green", weight=3, opacity=1).add_to(m)
+    m.save(r'D:\Codes\ETA_Predict\NewestMaps\RoutesMapWeatherMap'+Origin+Destination+Canal+'.html')
+    description_new.append(description)
